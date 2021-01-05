@@ -53,16 +53,22 @@ for (i in 1:length(result_analysis$tip.label))
     result_analysis$matchname[i] = paste(Records$Genus[1],"_",Records$Species[1],sep="")
   }
 
-#Reformat traits dataframe for plotting
-Traits = data.frame(result_analysis$trait.state_RD_Bierke, result_analysis$trait.state_RD_Fan, result_analysis$trait.state_Iso)
+#D-test for trait occurrence
+Traits_Dtest = data.frame(result_analysis$matchname, result_analysis$trait.state_Iso)
+colnames(Traits_Dtest) <- c("matchname","Iso")
+Trees = comparative.data(result_analysis, Traits_Dtest, matchname)
+redPhyloD <- phylo.d(Trees, binvar=Iso)
+print(redPhyloD)
+
+#Reformat traits for plotting
+Traits = data.frame(result_analysis$trait.state_Iso)
 row.names(Traits) <- result_analysis$tip.label
-colnames(Traits) <- c("RDWT_Bierke","RDWT_Fan","Iso")
+colnames(Traits) <- c("Iso")
 
 #Phylogeny plot
-tiff("E:/Global_Rooting/Figures/Phylogeny_RDWT_ISO_TreesShrubs_031820.tiff", units="in", width=5, height=5, res=600)
-trait.plot(result_analysis, dat=Traits, cols = list(RDWT_Fan = c("lightblue1","dodgerblue","midnightblue"),Iso = c("pink", "red")),cex.lab=0.4)
-text(x=0, y=120, paste("n =",length(result_analysis$tip.label),"species"),col ="black", cex=0.7)
-text(x=0, y=90, paste("n = ",length(Traits[Traits$RDWT_Fan == 0,1])," (RZ/VZ < 1)",sep=""),col ="lightblue3", cex=0.7)
-text(x=0, y=60, paste("n = ",length(Traits[Traits$RDWT_Fan == 1,1])," (RZ/VZ = 1)",sep=""),col ="dodgerblue", cex=0.7)
-text(x=0, y=30, paste("n = ",length(Traits[Traits$RDWT_Fan == 2,1])," (RZ/VZ > 1)",sep=""),col ="midnightblue", cex=0.7)
+tiff("C:/Phylo_GW_Study_120920/Figures/Phylogeny_ISO_Honly_excluded_031820.tiff", units="in", width=5, height=5, res=600)
+trait.plot(result_analysis, dat=Traits, class=result_analysis$family, cols = list(Iso = c("lightblue1","blue4")),cex.lab=0.4)
+text(x=0, y=60, paste("n = ",length(result_analysis$tip.label)," species",sep=""),col ="black", cex=0.8)
+text(x=0, y=30, paste("D = ",round(redPhyloD$DEstimate,3), " (p =",round(redPhyloD$Pval1,3),")",sep=""),col ="blue", cex=0.8)
 dev.off()
+
